@@ -1,3 +1,7 @@
+const LibraryBook = require("./library-book");
+const User = require("./user");
+const Validator = require("./validator");
+
 class Booking {
   constructor(user) {
     this.user = user;
@@ -7,6 +11,16 @@ class Booking {
     this.penalty = 0;
   }
 
+  set user(user) {
+    Validator.throwIfNotProperInstacne(user, User);
+    this._user = user;
+  }
+
+  get user() {
+    return this._user;
+  }
+
+  //sprawdzić czy nie da się inaczej???
   setReturnDate() {
     this.returnDate = new Date();
     this.returnDate.setDate(this.bookingDate.getDate() + 7);
@@ -16,27 +30,30 @@ class Booking {
     this.returnDate.setMilliseconds(999);
   }
 
-  bookABook(book) {
+  makeBooking(book) {
+    Validator.throwIfNotProperInstacne(book, LibraryBook);
     this.booksList.push(book);
-    book.changeQuantity(-1);
   }
 
-  returnBook(book) {
-    this.countPenalty();
-    this.booksList.splice(this.booksList.indexOf(book), 1);
-    book.changeQuantity(1);
+  returnBook(bookId) {
+    const book = this.findElementByIdInArr(this.booksList, bookId);
+    Validator.throwIfNotProperInstacne(book, LibraryBook);
+    this.booksList = this.booksList.filter((book) => book.id !== bookId);
   }
 
-  countPenalty() {
-    const currentDate = new Date(2022, 1, 18);
-    const numberOfDelayDays = Math.trunc(
-      (currentDate - this.returnDate) / 1000 / 60 / 60 / 24 + 1
+  countPenaltyPerBook() {
+    const currentDate = new Date(2022, 2, 27); //sample date to test, it should be "new Date();"
+    const numberOfDelayDays = Math.ceil(
+      (currentDate - this.returnDate) / 1000 / 60 / 60 / 24
     );
-    if (numberOfDelayDays >= 0) {
-      for (let i = 0; i < numberOfDelayDays; i++) {
-        this.penalty = this.penalty * 1.001 + 10;
-      }
+
+    if (numberOfDelayDays > 0) {
+      this.penalty += 10 * Math.pow(1.125, numberOfDelayDays - 1);
     }
+  }
+
+  findElementByIdInArr(arr, bookId) {
+    return arr.find((item) => item.id === bookId);
   }
 }
 

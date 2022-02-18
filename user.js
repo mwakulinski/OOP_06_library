@@ -2,16 +2,19 @@ const { v4: uuidv4 } = require("uuid");
 const Validator = require("./validator");
 
 class User {
-  #id;
   constructor(name, surname) {
-    this._name = name;
-    this._surname = surname;
-    this.#id = uuidv4();
+    this.name = name;
+    this.surname = surname;
+    this.id = uuidv4();
   }
 
   set name(name) {
     Validator.throwIfNotString(name);
-    this.name = name;
+    this._name = name;
+  }
+
+  get name() {
+    return this._name;
   }
 
   set surname(surname) {
@@ -19,8 +22,8 @@ class User {
     this._surname = surname;
   }
 
-  get id() {
-    return this.#id;
+  get surname() {
+    return this._surname;
   }
 }
 

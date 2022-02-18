@@ -2,36 +2,57 @@ const { v4: uuidv4 } = require("uuid");
 const Validator = require("./validator");
 
 class Book {
-  #id;
-  #totalQuantity;
-  constructor(title, author, photo, description, quantity = 1) {
+  constructor(title, author, photo, description) {
     this.title = title;
     this.author = author;
     this.photo = photo;
     this.description = description;
-    this.quantity = quantity;
-    this.#totalQuantity = quantity;
-    this.#id = uuidv4();
+    this.id = uuidv4();
   }
 
-  // Ma miec: Tytuł, Autora, uuid, losowe zdjęcie oraz krótki opis
+  set title(title) {
+    Validator.throwIfNotString(title);
+    this._title = title;
+  }
 
-  changeQuantity(numberOfCopies) {
-    if (
-      this.quantity + numberOfCopies <= this.totalQuantity &&
-      this.quantity + numberOfCopies >= 0
-    ) {
-      this.quantity = this.quantity + numberOfCopies;
-    } else {
-      throw new Error(
-        `Number of book copies must be between 0 and ${this.totalQuantity}`
-      );
+  get title() {
+    return this._title;
+  }
+
+  set author(author) {
+    Validator.throwIfNotString(author);
+    this._author = author;
+  }
+
+  get author() {
+    return this._author;
+  }
+
+  set photo(photo) {
+    Validator.throwIfNotString(photo);
+    this._photo = photo;
+  }
+
+  get photo() {
+    return this._photo;
+  }
+
+  set description(description) {
+    Validator.throwIfNotString(description);
+    this.throwIfDescriptonTooLong(description);
+    this._description = description;
+  }
+
+  get description() {
+    return this._description;
+  }
+
+  throwIfDescriptonTooLong(input) {
+    if (input.length > 450) {
+      throw new Error("Description must not be longer than 450 digits");
     }
   }
-
-  get totalQuantity() {
-    return this.#totalQuantity;
-  }
+  // Ma miec: Tytuł, Autora, uuid, losowe zdjęcie oraz krótki opis
 }
 
 module.exports = Book;

@@ -1,83 +1,172 @@
 const Validator = require("./validator");
 const User = require("./user");
-const Book = require("./book");
 const Booking = require("./booking");
+const LibraryBook = require("./library-book");
 
 class Library {
-  constructor(booksList = [], usersList = []) {
-    this.booksList = booksList;
-    this.availableBooks = [...booksList];
-    this.bookedBooksList = [];
-    this.usersList = usersList;
+  constructor() {
+    this.booksList = [];
+    this.availableBooks = [];
+    this.usersList = [];
     this.bookings = [];
   }
 
-  addBook(book) {
-    this.booksList.push(book);
-    this.availableBooks.push(book);
+  addBook(book, quantity) {
+    Validator.throwIfNotProperInstacne(book, LibraryBook);
+
+    const bookInLibrary = this.findElementByIdInArr(this.booksList, book.id);
+
+    if (bookInLibrary) {
+      const availableBook = this.findElementByIdInArr(
+        this.availableBooks,
+        book.id
+      );
+      quantity;
+      bookInLibrary.quantity += quantity;
+      availableBook.quantity += quantity;
+    } else {
+      book.quantity = quantity;
+      this.booksList.push(book);
+      //czy tutaj powinno pojawić się deepCopy>
+      this.availableBooks = this.#deepBookListCopy();
+    }
   }
 
-  deleteBook(book) {
-    this.booksList.splice(this.booksList.indexOf(book), 1);
-    this.availableBooks.splice(this.availableBooks.indexOf(book), 1);
+  deleteBook(bookId, quantity = 1) {
+    this.throwIfBookNotFound(bookId);
+
+    const bookInLibrary = this.findElementByIdInArr(this.booksList, bookId);
+    const availableBook = this.findElementByIdInArr(
+      this.availableBooks,
+      bookId
+    );
+
+    if (bookInLibrary.quantity > quantity) {
+      bookInLibrary.quantity -= quantity;
+      availableBook.quantity -= quantity;
+    } else if (bookInLibrary.quantity === quantity) {
+      this.booksList = this.booksList.filter((book) => book.id !== bookId);
+      this.availableBooks = this.availableBooks.filter(
+        (book) => book.id !== bookId
+      );
+    } else {
+      throw new Error(
+        `You can not delete more books than ${bookInLibrary.quantity}`
+      );
+    }
   }
 
   addUser(name, surname) {
+    Validator.throwIfNotString(name);
+    Validator.throwIfNotString(surname);
     this.usersList.push(new User(name, surname));
   }
 
-  deleteUser(user) {
-    this.usersList.splice(this.usersList.indexOf(user), 1);
+  deleteUser(userId) {
+    const user = this.findElementByIdInArr(this.usersList, userId);
+    Validator.throwIfNotProperInstacne(user, User);
+    this.usersList = this.usersList.filter((user) => user.id !== userId);
   }
 
-  bookBooks(user, books) {
-    Validator.isInstacneOf(user, User);
+  bookBooks(userId, books) {
+    const user = this.findElementByIdInArr(this.usersList, userId);
+    Validator.throwIfNotProperInstacne(user, User);
+    Validator.throwIfNotArr(books);
+    books.forEach((book) =>
+      Validator.throwIfNotProperInstacne(book, LibraryBook)
+    );
 
-    this.bookings.push(new Booking(user));
-    this.addToBookedBooksList(books);
-    this.addToBookingList(books);
-    this.refreshAvailableBooks();
-  }
+    const booking = new Booking(user);
+    booking.booksList = [...books];
 
-  addToBookedBooksList(books) {
-    books.forEach((book) => {
-      if (book.quantity === book.totalQuantity) {
-        this.bookedBooksList.push(book);
-      }
-    });
-  }
+    booking.booksList.forEach((book) => this.throwIfBookUnavaialable(book.id));
+    booking.booksList.forEach((book) => book.makeBooking);
+    this.bookings.push(booking);
 
-  addToBookingList(books) {
-    books.forEach((book) => {
-      this.bookings[this.bookings.length - 1].bookABook(book);
-    });
-  }
-
-  refreshAvailableBooks() {
-    this.availableBooks = this.availableBooks.filter(
-      (book) => book.quantity !== 0
+    booking.booksList.forEach((book) =>
+      this.decreaseNumberOfAvaialableCopies(book)
     );
   }
 
-  returnBooks(user, books) {
-    Validator.isInstacneOf(user, User);
-    const userBookings = this.bookings.filter((booking) => {
-      // console.log(booking);
+  returnBooks(userId, bookId) {
+    const user = this.findElementByIdInArr(this.usersList, userId);
+    Validator.throwIfNotProperInstacne(user, User);
+
+    const book = this.findElementByIdInArr(this.booksList, bookId);
+    Validator.throwIfNotProperInstacne(book, LibraryBook);
+
+    const booking = this.findBookingWithBook(user, book);
+    booking.countPenaltyPerBook();
+
+    booking.booksList.forEach((book) => {
+      this.increaseNumberOfAvaialableCopies(book);
+    });
+
+    booking.returnBook(book.id);
+  }
+
+  decreaseNumberOfAvaialableCopies(book) {
+    const availableBook = this.findElementByIdInArr(
+      this.availableBooks,
+      book.id
+    );
+
+    availableBook.quantity -= 1;
+    if (availableBook.quantity === 0) {
+      this.availableBooks.splice(this.availableBooks.indexOf(availableBook), 1);
+    }
+  }
+
+  increaseNumberOfAvaialableCopies(book) {
+    const availableBook = this.findElementByIdInArr(
+      this.availableBooks,
+      book.id
+    );
+
+    if (!availableBook) {
+      book.quantity = 1;
+      this.availableBooks.push(book);
+    } else {
+      availableBook.quantity += 1;
+    }
+  }
+
+  findElementByIdInArr(arr, bookId) {
+    return arr.find((item) => item.id === bookId);
+  }
+
+  findBookingWithBook(user, book) {
+    const userBookings = this.findUserBookings(user);
+    return userBookings.find((booking) => booking.booksList.includes(book));
+  }
+
+  findUserBookings(user) {
+    return this.bookings.filter((booking) => {
       return (
         booking.user.name === user.name && booking.user.surname === user.surname
       );
     });
-    books.forEach((book) => {
-      userBookings
-        .find((booking) => {
-          return booking.booksList.includes(book);
-        })
-        .returnBook(book);
-    });
+  }
 
-    this.bookedBooksList = this.bookedBooksList.filter((book) => {
-      return book.quantity !== book.totalQuantity;
-    });
+  throwIfBookUnavaialable(bookId) {
+    if (!this.findElementByIdInArr(this.availableBooks, bookId)) {
+      throw new Error("Book unavaviable, please try book later");
+    }
+  }
+
+  throwIfBookNotFound(bookId) {
+    if (!this.findElementByIdInArr(this.booksList, bookId)) {
+      throw new Error(`Such a boook does not exist in this Library`);
+    }
+  }
+
+  #deepBookListCopy() {
+    return this.booksList.map((book) =>
+      Object.assign(
+        new LibraryBook(book.title, book.author, book.photo, book.description),
+        book
+      )
+    );
   }
 
   // Ma miec: listę książek, listę książek dostępnych (które nie zostały wypożyczone),

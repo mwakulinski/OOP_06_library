@@ -1,6 +1,6 @@
 class Validator {
   static throwIfNotString(input) {
-    if (typeof input !== "string") {
+    if (typeof input !== "string" || input.length === 0) {
       throw new Error("Input data must be a string");
     }
   }
@@ -9,13 +9,21 @@ class Validator {
     return typeof object === "object";
   };
 
-  static isArray = (object) => {
-    return Array.isArray(object);
+  static throwIfNotArr = (object) => {
+    if (!Array.isArray(object)) {
+      throw new Error("Input data must be of type Array");
+    }
   };
 
-  static isInstacneOf = (instance, classType) => {
+  static throwIfNotProperInstacne = (instance, classType) => {
     if (!(instance instanceof classType))
-      throw new Error("Such an user does not exist");
+      throw new Error(`${instance} must be of class ${classType.name}`);
+  };
+
+  static throwIfNotPositiveInt = (number) => {
+    if (!Number.isInteger(number) || number < 0) {
+      throw new Error(`Input data must be a positive number`);
+    }
   };
 }
 
