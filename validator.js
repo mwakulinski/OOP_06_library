@@ -20,9 +20,15 @@ class Validator {
       throw new Error(`${instance} must be of class ${classType.name}`);
   };
 
+  static throwIfNotPositiveNumber = (number) => {
+    if (typeof number !== "number" || number <= 0) {
+      throw new Error("Input data must be positive number");
+    }
+  };
+
   static throwIfNotPositiveInt = (number) => {
     if (!Number.isInteger(number) || number < 0) {
-      throw new Error(`Input data must be a positive number`);
+      throw new Error(`Input data must be a positive integer`);
     }
   };
 }
