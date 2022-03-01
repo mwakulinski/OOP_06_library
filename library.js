@@ -1,8 +1,9 @@
 const Validator = require("./validator");
 const User = require("./user");
 const Booking = require("./booking");
-const LibraryBook = require("./library-book");
+const Book = require("./book");
 
+// {book: Book, quatity: 123}
 class Library {
   constructor() {
     this.booksList = [];
@@ -12,7 +13,7 @@ class Library {
   }
 
   addBook(book, quantity) {
-    Validator.throwIfNotProperInstacne(book, LibraryBook);
+    Validator.throwIfNotProperInstacne(book, Book);
 
     const bookInLibrary = this.findElementByIdInArr(this.booksList, book.id);
 
@@ -21,15 +22,15 @@ class Library {
         this.availableBooks,
         book.id
       );
-      quantity;
       bookInLibrary.quantity += quantity;
       availableBook.quantity += quantity;
-    } else {
-      book.quantity = quantity;
-      this.booksList.push(book);
-      //czy tutaj powinno pojawić się deepCopy>
-      this.availableBooks = this.#deepBookListCopy();
+      return;
     }
+
+    book.quantity = quantity;
+    this.booksList.push(book);
+    //czy tutaj powinno pojawić się deepCopy>
+    this.availableBooks = this.#deepBookListCopy();
   }
 
   deleteBook(bookId, quantity = 1) {
@@ -72,13 +73,12 @@ class Library {
     const user = this.findElementByIdInArr(this.usersList, userId);
     Validator.throwIfNotProperInstacne(user, User);
     Validator.throwIfNotArr(books);
-    books.forEach((book) =>
-      Validator.throwIfNotProperInstacne(book, LibraryBook)
-    );
+    //do booking
+    books.forEach((book) => Validator.throwIfNotProperInstacne(book, Book));
 
-    const booking = new Booking(user);
+    const booking = new Booking(user, books);
     booking.booksList = [...books];
-
+    //Solid złamany
     booking.booksList.forEach((book) => this.throwIfBookUnavaialable(book.id));
     booking.booksList.forEach((book) => book.makeBooking);
     this.bookings.push(booking);
@@ -88,15 +88,15 @@ class Library {
     );
   }
 
+  //troche solidu złamane i nazwy nieadekwatne
   returnBooks(userId, bookId) {
     const user = this.findElementByIdInArr(this.usersList, userId);
     Validator.throwIfNotProperInstacne(user, User);
 
     const book = this.findElementByIdInArr(this.booksList, bookId);
-    Validator.throwIfNotProperInstacne(book, LibraryBook);
+    Validator.throwIfNotProperInstacne(book, Book);
 
     const booking = this.findBookingWithBook(user, book);
-    booking.countPenaltyPerBook();
 
     booking.booksList.forEach((book) => {
       this.increaseNumberOfAvaialableCopies(book);
@@ -163,7 +163,7 @@ class Library {
   #deepBookListCopy() {
     return this.booksList.map((book) =>
       Object.assign(
-        new LibraryBook(book.title, book.author, book.photo, book.description),
+        new Book(book.title, book.author, book.photo, book.description),
         book
       )
     );

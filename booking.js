@@ -1,4 +1,4 @@
-const LibraryBook = require("./library-book");
+const Book = require("./book");
 const User = require("./user");
 const Validator = require("./validator");
 const add = require("date-fns/add");
@@ -29,13 +29,13 @@ class Booking {
   }
 
   makeBooking(book) {
-    Validator.throwIfNotProperInstacne(book, LibraryBook);
+    Validator.throwIfNotProperInstacne(book, Book);
     this.booksList.push(book);
   }
 
   returnBook(bookId) {
     const book = this.findElementByIdInArr(this.booksList, bookId);
-    Validator.throwIfNotProperInstacne(book, LibraryBook);
+    Validator.throwIfNotProperInstacne(book, Book);
     this.booksList = this.booksList.filter(({ id }) => id !== bookId);
   }
 
