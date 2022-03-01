@@ -35,21 +35,24 @@ class Booking {
   }
 
   returnBook(bookId) {
+    Validator.throwIfNotString(bookId);
     const book = this.findElementByIdInArr(this.booksList, bookId);
-    Validator.throwIfNotProperInstacne(book, Book);
+    if (!book) {
+      throw new Error("You didn't book such a book");
+    }
     this.countPenaltyPerBook();
     this.booksList = this.booksList.filter(({ id }) => id !== bookId);
   }
 
   countPenaltyPerBook() {
-    const currentDate = new Date(2022, 1, 27); //sample date to test, it should be "new Date();"
+    const currentDate = new Date(2022, 2, 27); //sample date to test, it should be "new Date();"
     const numberOfDelayDays = differenceInCalendarDays(
       currentDate,
       this.returnDate
     );
 
     if (numberOfDelayDays > 0) {
-      this.penalty += 5 * Math.pow(1.125, numberOfDelayDays - 1);
+      this.penalty += 10 * Math.pow(1.125, numberOfDelayDays - 1);
     }
   }
 
@@ -78,7 +81,8 @@ const book2 = new Book(
 const booking = new Booking(user);
 booking.makeBooking(book1);
 booking.makeBooking(book2);
-booking.countPenaltyPerBook();
+booking.returnBook(book1.id);
+booking.returnBook(book1.id);
 console.log(booking);
 // Booking dostaje użytkownika w constructorze
 
