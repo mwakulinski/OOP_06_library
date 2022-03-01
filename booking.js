@@ -1,6 +1,8 @@
 const LibraryBook = require("./library-book");
 const User = require("./user");
 const Validator = require("./validator");
+const add = require("date-fns/add");
+const endOfDay = require("date-fns/endOfDay");
 
 class Booking {
   constructor(user) {
@@ -21,13 +23,9 @@ class Booking {
   }
 
   //sprawdzić czy nie da się inaczej???
+  //date fns
   setReturnDate() {
-    this.returnDate = new Date();
-    this.returnDate.setDate(this.bookingDate.getDate() + 7);
-    this.returnDate.setHours(24);
-    this.returnDate.setMinutes(59);
-    this.returnDate.setSeconds(59);
-    this.returnDate.setMilliseconds(999);
+    this.returnDate = endOfDay(add(new Date(), { days: 7 }));
   }
 
   makeBooking(book) {
@@ -38,7 +36,7 @@ class Booking {
   returnBook(bookId) {
     const book = this.findElementByIdInArr(this.booksList, bookId);
     Validator.throwIfNotProperInstacne(book, LibraryBook);
-    this.booksList = this.booksList.filter((book) => book.id !== bookId);
+    this.booksList = this.booksList.filter(({ id }) => id !== bookId);
   }
 
   countPenaltyPerBook() {
