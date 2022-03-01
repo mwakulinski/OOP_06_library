@@ -56,6 +56,11 @@ class Booking {
     }
   }
 
+  payPenalty(inputSum) {
+    Validator.throwIfNotPositiveNumber(inputSum);
+    this.penalty -= inputSum;
+  }
+
   findElementByIdInArr(arr, bookId) {
     return arr.find((item) => item.id === bookId);
   }
