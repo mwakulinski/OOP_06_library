@@ -37,6 +37,7 @@ class Booking {
   returnBook(bookId) {
     const book = this.findElementByIdInArr(this.booksList, bookId);
     Validator.throwIfNotProperInstacne(book, Book);
+    this.countPenaltyPerBook();
     this.booksList = this.booksList.filter(({ id }) => id !== bookId);
   }
 
