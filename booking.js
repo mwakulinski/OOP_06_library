@@ -3,12 +3,13 @@ const User = require("./user");
 const Validator = require("./validator");
 const add = require("date-fns/add");
 const endOfDay = require("date-fns/endOfDay");
+const differenceInCalendarDays = require("date-fns/differenceInCalendarDays");
 
 class Booking {
   constructor(user) {
     this.user = user;
     this.bookingDate = new Date();
-    this.setReturnDate();
+    this.#setReturnDate();
     this.booksList = [];
     this.penalty = 0;
   }
@@ -24,7 +25,7 @@ class Booking {
 
   //sprawdzić czy nie da się inaczej???
   //date fns
-  setReturnDate() {
+  #setReturnDate() {
     this.returnDate = endOfDay(add(new Date(), { days: 7 }));
   }
 
@@ -40,13 +41,14 @@ class Booking {
   }
 
   countPenaltyPerBook() {
-    const currentDate = new Date(2022, 2, 27); //sample date to test, it should be "new Date();"
-    const numberOfDelayDays = Math.ceil(
-      (currentDate - this.returnDate) / 1000 / 60 / 60 / 24
+    const currentDate = new Date(2022, 1, 27); //sample date to test, it should be "new Date();"
+    const numberOfDelayDays = differenceInCalendarDays(
+      currentDate,
+      this.returnDate
     );
 
     if (numberOfDelayDays > 0) {
-      this.penalty += 10 * Math.pow(1.125, numberOfDelayDays - 1);
+      this.penalty += 5 * Math.pow(1.125, numberOfDelayDays - 1);
     }
   }
 
@@ -57,6 +59,26 @@ class Booking {
 
 module.exports = Booking;
 
+const user = new User("Michal", "Waki");
+
+const book1 = new Book(
+  "O psach",
+  "Michal Wakulinski",
+  "photo1",
+  "Good book to reade about dogs"
+);
+const book2 = new Book(
+  "O kotach",
+  "Barbara Nowak",
+  "photo2",
+  "Good book to reade about cats"
+);
+
+const booking = new Booking(user);
+booking.makeBooking(book1);
+booking.makeBooking(book2);
+booking.countPenaltyPerBook();
+console.log(booking);
 // Booking dostaje użytkownika w constructorze
 
 // Ma mieć: datę wypożyczenia, datę zwrotu (+7d od wypożyczenia), listę wypożyczonych książek, kara
