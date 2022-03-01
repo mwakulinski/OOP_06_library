@@ -48,8 +48,11 @@ class Book {
   }
 
   throwIfDescriptonTooLong(input) {
-    if (input.length > 450) {
-      throw new Error("Description must not be longer than 450 digits");
+    const maxLength = 450;
+    if (input.length > maxLength) {
+      throw new Error(
+        `Description must not be longer than ${maxLength} digits`
+      );
     }
   }
   // Ma miec: Tytuł, Autora, uuid, losowe zdjęcie oraz krótki opis
