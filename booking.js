@@ -40,11 +40,11 @@ class Booking {
     if (!book) {
       throw new Error("You didn't book such a book");
     }
-    this.countPenaltyPerBook();
+    this.#countPenaltyPerBook();
     this.booksList = this.booksList.filter(({ id }) => id !== bookId);
   }
 
-  countPenaltyPerBook() {
+  #countPenaltyPerBook() {
     const currentDate = new Date(2022, 2, 27); //sample date to test, it should be "new Date();"
     const numberOfDelayDays = differenceInCalendarDays(
       currentDate,
@@ -53,9 +53,7 @@ class Booking {
 
     if (numberOfDelayDays > 0) {
       this.penalty += 10 * Math.pow(1.125, numberOfDelayDays - 1);
-      this.penalty *= 100;
-      this.penalty = Math.round(this.penalty);
-      this.penalty /= 100;
+      this.penalty = this.#roundToTwoDecimalPlaces(this.penalty);
     }
   }
 
@@ -66,6 +64,10 @@ class Booking {
 
   findElementByIdInArr(arr, bookId) {
     return arr.find((item) => item.id === bookId);
+  }
+
+  #roundToTwoDecimalPlaces(number) {
+    return Math.round(number * 100) / 100;
   }
 }
 
