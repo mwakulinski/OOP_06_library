@@ -73,7 +73,6 @@ class Library {
     Validator.throwIfNotProperInstacne(user, User);
     Validator.throwIfNotArr(books);
     //do booking
-    books.forEach((book) => Validator.throwIfNotProperInstacne(book, Book));
 
     const booking = new Booking(user, books);
     //Solid złamany
