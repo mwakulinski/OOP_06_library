@@ -81,34 +81,3 @@ class Booking {
 }
 
 module.exports = Booking;
-
-const user = new User("Michal", "Waki");
-
-const book1 = new Book(
-  "O psach",
-  "Michal Wakulinski",
-  "photo1",
-  "Good book to reade about dogs"
-);
-const book2 = new Book(
-  "O kotach",
-  "Barbara Nowak",
-  "photo2",
-  "Good book to reade about cats"
-);
-
-const booking = new Booking(user);
-booking.addBookToBooking(book1);
-booking.addBookToBooking(book2);
-booking.returnBook(book1.id);
-booking.returnBook(book2.id);
-booking.payPenalty(142);
-console.log(booking);
-// Booking dostaje użytkownika w constructorze
-
-// Ma mieć: datę wypożyczenia, datę zwrotu (+7d od wypożyczenia), listę wypożyczonych książek, kara
-
-// Ma umożliwiać:
-// - usuwanie i dodawanie książki do listy wyporzyczonych książek
-// - zwrot - jeśli odbędzie się terminowo kara jest 0 - jesli nie -
-// każdy dzień zwłoki to naliczenie jakiejś kary.
