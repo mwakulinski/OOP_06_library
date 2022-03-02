@@ -14,6 +14,7 @@ class Library {
 
   addBook(book, quantity) {
     Validator.throwIfNotProperInstacne(book, Book);
+    Validator.throwIfNotPositiveInt(quantity);
 
     const bookInLibrary = this.findElementByIdInArr(this.booksList, book.id);
 
@@ -27,10 +28,8 @@ class Library {
       return;
     }
 
-    book.quantity = quantity;
-    this.booksList.push(book);
-    //czy tutaj powinno pojawić się deepCopy>
-    this.availableBooks = this.#deepBookListCopy();
+    this.booksList.push({ book: book, quantity: quantity });
+    this.availableBooks.push({ book: book, quantity: quantity });
   }
 
   deleteBook(bookId, quantity = 1) {
@@ -77,7 +76,6 @@ class Library {
     books.forEach((book) => Validator.throwIfNotProperInstacne(book, Book));
 
     const booking = new Booking(user, books);
-    booking.booksList = [...books];
     //Solid złamany
     booking.booksList.forEach((book) => this.throwIfBookUnavaialable(book.id));
     booking.booksList.forEach((book) => book.makeBooking);
@@ -131,8 +129,14 @@ class Library {
     }
   }
 
-  findElementByIdInArr(arr, bookId) {
-    return arr.find((item) => item.id === bookId);
+  findElementByIdInArr(arr, elementId) {
+    const arrValues = Object.values(arr);
+    return arrValues.find((item) => {
+      if (typeof item === "object") {
+        return this.findElementByIdInArr(item, elementId);
+      }
+      return item === elementId;
+    });
   }
 
   findBookingWithBook(user, book) {
