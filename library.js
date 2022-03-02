@@ -72,17 +72,14 @@ class Library {
     const user = this.findElementByIdInArr(this.usersList, userId);
     Validator.throwIfNotProperInstacne(user, User);
     Validator.throwIfNotArr(books);
-    //do booking
+
+    books.forEach((book) => {
+      this.throwIfBookUnavaialable(book.id);
+      this.decreaseNumberOfAvaialableCopies(book);
+    });
 
     const booking = new Booking(user, books);
-    //Solid złamany
-    booking.booksList.forEach((book) => this.throwIfBookUnavaialable(book.id));
-    booking.booksList.forEach((book) => book.makeBooking);
     this.bookings.push(booking);
-
-    booking.booksList.forEach((book) =>
-      this.decreaseNumberOfAvaialableCopies(book)
-    );
   }
 
   //troche solidu złamane i nazwy nieadekwatne
