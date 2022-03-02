@@ -107,7 +107,9 @@ class Library {
 
     availableBook.quantity -= 1;
     if (availableBook.quantity === 0) {
-      this.availableBooks.splice(this.availableBooks.indexOf(availableBook), 1);
+      this.availableBooks = this.availableBooks.filter(
+        (book) => book !== availableBook
+      );
     }
   }
 
