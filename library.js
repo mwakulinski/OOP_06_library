@@ -75,28 +75,35 @@ class Library {
 
     books.forEach((book) => {
       this.throwIfBookUnavaialable(book.id);
-      this.decreaseNumberOfAvaialableCopies(book);
     });
 
     const booking = new Booking(user, books);
+
+    books.forEach((book) => {
+      this.decreaseNumberOfAvaialableCopies(book);
+    });
+
     this.bookings.push(booking);
   }
 
   //troche solidu złamane i nazwy nieadekwatne
-  returnBooks(userId, bookId) {
+  returnBook(userId, bookId) {
     const user = this.findElementByIdInArr(this.usersList, userId);
     Validator.throwIfNotProperInstacne(user, User);
 
-    const book = this.findElementByIdInArr(this.booksList, bookId);
+    const book = this.findElementByIdInArr(this.booksList, bookId).book;
     Validator.throwIfNotProperInstacne(book, Book);
 
     const booking = this.findBookingWithBook(user, book);
 
-    booking.booksList.forEach((book) => {
-      this.increaseNumberOfAvaialableCopies(book);
-    });
+    if (!booking) {
+      throw new Error(
+        `${user.name + " " + user.surname} didn't book ${book.title}`
+      );
+    }
 
     booking.returnBook(book.id);
+    this.increaseNumberOfAvaialableCopies(book);
   }
 
   decreaseNumberOfAvaialableCopies(book) {
