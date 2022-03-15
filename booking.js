@@ -26,30 +26,31 @@ class Booking {
   set booksList(books) {
     Validator.throwIfNotArr(books);
     books.forEach((book) => Validator.throwIfNotProperInstacne(book, Book));
-    this._bookList = books;
+    this._booksList = [...books];
   }
 
   get booksList() {
-    return this._bookList;
+    return this._booksList;
   }
 
   #setReturnDate() {
     this.returnDate = endOfDay(add(new Date(), { days: 7 }));
   }
 
-  addBookToBooking(book) {
-    Validator.throwIfNotProperInstacne(book, Book);
-    this.booksList.push(book);
-  }
-
   returnBook(bookId) {
     Validator.throwIfNotString(bookId);
-    const book = this.findElementByIdInArr(this.booksList, bookId);
+    const book = this.booksList.find((item) => item.id === bookId);
     if (!book) {
       throw new Error("You didn't book such a book");
     }
     this.#countPenaltyPerBook();
     this.booksList = this.booksList.filter(({ id }) => id !== bookId);
+  }
+
+  payPenalty(inputSum) {
+    Validator.throwIfNotPositiveNumber(inputSum);
+    this.penalty -= inputSum;
+    this.penalty = this.#roundToTwoDecimalPlaces(this.penalty);
   }
 
   #countPenaltyPerBook() {
@@ -63,16 +64,6 @@ class Booking {
       this.penalty += 10 * Math.pow(1.125, numberOfDelayDays - 1);
       this.penalty = this.#roundToTwoDecimalPlaces(this.penalty);
     }
-  }
-
-  payPenalty(inputSum) {
-    Validator.throwIfNotPositiveNumber(inputSum);
-    this.penalty -= inputSum;
-    this.penalty = this.#roundToTwoDecimalPlaces(this.penalty);
-  }
-
-  findElementByIdInArr(arr, bookId) {
-    return arr.find((item) => item.id === bookId);
   }
 
   #roundToTwoDecimalPlaces(number) {

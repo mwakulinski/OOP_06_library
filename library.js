@@ -6,8 +6,9 @@ const Book = require("./book");
 // {book: Book, quatity: 123}
 class Library {
   constructor() {
-    this.booksList = [];
-    this.availableBooks = [];
+    this.booksList = [
+      /*{ book: Book, available: 10, borrowed: 10 }*/
+    ];
     this.usersList = [];
     this.bookings = [];
   }
@@ -19,81 +20,58 @@ class Library {
     const bookInLibrary = this.findElementByIdInArr(this.booksList, book.id);
 
     if (bookInLibrary) {
-      const availableBook = this.findElementByIdInArr(
-        this.availableBooks,
-        book.id
-      );
-      bookInLibrary.quantity += quantity;
-      availableBook.quantity += quantity;
+      bookInLibrary.available += quantity;
       return;
     }
 
-    this.booksList.push({ book: book, quantity: quantity });
-    this.availableBooks.push({ book: book, quantity: quantity });
+    this.booksList.push({ book: book, available: quantity, borrowed: 0 });
   }
 
   deleteBook(bookId, quantity = 1) {
     this.throwIfBookNotFound(bookId);
 
     const bookInLibrary = this.findElementByIdInArr(this.booksList, bookId);
-    const availableBook = this.findElementByIdInArr(
-      this.availableBooks,
-      bookId
-    );
 
-    if (bookInLibrary.quantity > quantity) {
-      bookInLibrary.quantity -= quantity;
-      availableBook.quantity -= quantity;
-    } else if (bookInLibrary.quantity === quantity) {
-      this.booksList = this.booksList.filter((book) => book.id !== bookId);
-      this.availableBooks = this.availableBooks.filter(
-        (book) => book.id !== bookId
-      );
+    if (bookInLibrary.available >= quantity) {
+      bookInLibrary.available -= quantity;
     } else {
       throw new Error(
-        `You can not delete more books than ${bookInLibrary.quantity}`
+        `You can not delete more books than ${bookInLibrary.available}`
       );
     }
   }
 
   addUser(name, surname) {
-    Validator.throwIfNotString(name);
-    Validator.throwIfNotString(surname);
     this.usersList.push(new User(name, surname));
   }
 
   deleteUser(userId) {
-    const user = this.findElementByIdInArr(this.usersList, userId);
-    Validator.throwIfNotProperInstacne(user, User);
-    this.usersList = this.usersList.filter((user) => user.id !== userId);
+    this.usersList = this.usersList.filter(({ id }) => id !== userId);
   }
 
-  bookBooks(userId, books) {
+  bookBooks(userId, booksIds) {
     const user = this.findElementByIdInArr(this.usersList, userId);
-    Validator.throwIfNotProperInstacne(user, User);
-    Validator.throwIfNotArr(books);
 
-    books.forEach((book) => {
-      this.throwIfBookUnavaialable(book.id);
+    booksIds.forEach((bookId) => {
+      this.throwIfBookUnavaialable(bookId);
     });
 
-    const booking = new Booking(user, books);
+    const booksToBook = [];
+    booksIds.forEach((bookId) => {
+      const book = this.findElementByIdInArr(this.booksList, bookId);
+      this.decreaseNumberOfAvaialableCopies(bookId);
 
-    books.forEach((book) => {
-      this.decreaseNumberOfAvaialableCopies(book);
+      booksToBook.push(book.book);
     });
 
+    const booking = new Booking(user, booksToBook);
     this.bookings.push(booking);
   }
 
   //troche solidu złamane i nazwy nieadekwatne
   returnBook(userId, bookId) {
     const user = this.findElementByIdInArr(this.usersList, userId);
-    Validator.throwIfNotProperInstacne(user, User);
-
     const book = this.findElementByIdInArr(this.booksList, bookId).book;
-    Validator.throwIfNotProperInstacne(book, Book);
-
     const booking = this.findBookingWithBook(user, book);
 
     if (!booking) {
@@ -102,35 +80,24 @@ class Library {
       );
     }
 
-    booking.returnBook(book.id);
-    this.increaseNumberOfAvaialableCopies(book);
+    booking.returnBook(bookId);
+    this.increaseNumberOfAvaialableCopies(bookId);
   }
 
-  decreaseNumberOfAvaialableCopies(book) {
-    const availableBook = this.findElementByIdInArr(
-      this.availableBooks,
-      book.id
-    );
+  decreaseNumberOfAvaialableCopies(bookId) {
+    const book = this.findElementByIdInArr(this.booksList, bookId);
 
-    availableBook.quantity -= 1;
-    if (availableBook.quantity === 0) {
-      this.availableBooks = this.availableBooks.filter(
-        (book) => book !== availableBook
-      );
+    if (book.available >= 1) {
+      book.available -= 1;
+      book.borrowed += 1;
     }
   }
 
-  increaseNumberOfAvaialableCopies(book) {
-    const availableBook = this.findElementByIdInArr(
-      this.availableBooks,
-      book.id
-    );
-
-    if (!availableBook) {
-      book.quantity = 1;
-      this.availableBooks.push(book);
-    } else {
-      availableBook.quantity += 1;
+  increaseNumberOfAvaialableCopies(bookId) {
+    const book = this.findElementByIdInArr(this.booksList, bookId);
+    if (book.borrowed > 0) {
+      book.available += 1;
+      book.borrowed -= 1;
     }
   }
 
@@ -158,7 +125,8 @@ class Library {
   }
 
   throwIfBookUnavaialable(bookId) {
-    if (!this.findElementByIdInArr(this.availableBooks, bookId)) {
+    const book = this.findElementByIdInArr(this.booksList, bookId);
+    if (book.available === 0) {
       throw new Error("Book unavaviable, please try book later");
     }
   }

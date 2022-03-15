@@ -37,17 +37,17 @@ library.addUser("Paweł", "Pawełski");
 library.addUser("Gaweł", "Gawelski");
 library.addUser("Patryk", "Patrycki");
 
-library.bookBooks(library.usersList[0].id, [book3, book4]);
-library.bookBooks(library.usersList[1].id, [book3, book4]);
-library.bookBooks(library.usersList[2].id, [book3, book4]);
+library.bookBooks(library.usersList[0].id, [book3.id, book4.id]);
+library.bookBooks(library.usersList[1].id, [book3.id, book4.id]);
+library.bookBooks(library.usersList[2].id, [book3.id, book4.id]);
 
 library.returnBook(library.usersList[0].id, book3.id);
 library.returnBook(library.usersList[0].id, book4.id);
 library.returnBook(library.usersList[1].id, book4.id);
 library.returnBook(library.usersList[2].id, book4.id);
-library.deleteBook(library.booksList[0].book.id, 2);
+library.deleteBook(library.booksList[0].book.id, 6);
 
 // library.deleteUser(library.usersList[0].id);
 
-console.log(library);
+console.log(library.booksList);
 // console.log(library.availableBooks);
