@@ -3,12 +3,9 @@ const User = require("./user");
 const Booking = require("./booking");
 const Book = require("./book");
 
-// {book: Book, quatity: 123}
 class Library {
   constructor() {
-    this.booksList = [
-      /*{ book: Book, available: 10, borrowed: 10 }*/
-    ];
+    this.booksList = [];
     this.usersList = [];
     this.bookings = [];
   }
@@ -32,13 +29,13 @@ class Library {
 
     const bookInLibrary = this.findElementByIdInArr(this.booksList, bookId);
 
-    if (bookInLibrary.available >= quantity) {
-      bookInLibrary.available -= quantity;
-    } else {
+    if (bookInLibrary.available <= quantity) {
       throw new Error(
         `You can not delete more books than ${bookInLibrary.available}`
       );
     }
+
+    bookInLibrary.available -= quantity;
   }
 
   addUser(name, surname) {
@@ -58,10 +55,10 @@ class Library {
 
     const booksToBook = [];
     booksIds.forEach((bookId) => {
-      const book = this.findElementByIdInArr(this.booksList, bookId);
+      const { book } = this.findElementByIdInArr(this.booksList, bookId);
       this.decreaseNumberOfAvaialableCopies(bookId);
 
-      booksToBook.push(book.book);
+      booksToBook.push(book);
     });
 
     const booking = new Booking(user, booksToBook);
@@ -135,15 +132,6 @@ class Library {
     if (!this.findElementByIdInArr(this.booksList, bookId)) {
       throw new Error(`Such a boook does not exist in this Library`);
     }
-  }
-
-  #deepBookListCopy() {
-    return this.booksList.map((book) =>
-      Object.assign(
-        new Book(book.title, book.author, book.photo, book.description),
-        book
-      )
-    );
   }
 
   // Ma miec: listę książek, listę książek dostępnych (które nie zostały wypożyczone),
