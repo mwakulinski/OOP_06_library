@@ -37,6 +37,8 @@ class Booking {
     this.returnDate = endOfDay(add(new Date(), { days: 7 }));
   }
 
+  //[10]
+  //1
   returnBook(bookId) {
     Validator.throwIfNotString(bookId);
     const book = this.booksList.find((item) => item.id === bookId);
@@ -61,7 +63,8 @@ class Booking {
     );
 
     if (numberOfDelayDays > 0) {
-      this.penalty += 10 * Math.pow(1.125, numberOfDelayDays - 1);
+      const newPenalty =
+        this.penalty + 10 * Math.pow(1.125, numberOfDelayDays - 1);
       this.penalty = this.#roundToTwoDecimalPlaces(this.penalty);
     }
   }
